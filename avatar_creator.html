@@ -1,0 +1,477 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Portrait Sketch</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div id="header" style="top"></div>
+    <div id='loadingover' style='display: none;'>
+        <div id='loadingmsg' style='display: none;'>Loading, please wait...</div>
+    </div>
+    <div id="outer">
+        <div id="left_div">
+           <div id="my_camera"></div>
+           <img id="camera_img" src="images/camera.png" onclick="preview_snapshot();" />
+            <div id="crop">
+            <img id="selfie_img" src="" />
+           </div>
+           <canvas id="canvas"></canvas>
+           <img id="trash_img" src="images/trash.png" title="clear this part of the sketch" onclick="clearPaths();" />
+           <img id="undo_img" src="images/undo.png" title="undo last stroke" onclick="undo();" />
+           <div id="selector_view">
+               <a href="#prev_item" id="prev_item" class="selector button prev" onclick="select_prev();">Previous</a>
+               <a href="#next_item" id="next_item" class="selector button next" onclick="select_next();">Next</a>
+           </div>
+           <div id="instructions_text" align="center">Test Text</div>
+           <div id="navigation_buttons" style="display:none;">
+               <a href="#prev" id="prev" class="button prev">Previous</a>
+               <a href="#next" id="next" class="button next">Next</a>
+           </div>
+        </div>
+        <div id="right_div">
+            <div id="right_container">
+                <div id="svgAvatars"></div>
+            </div>
+        </div>
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+          <!-- Modal content -->
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modal-text">Must Sketch Before Continuing</p>
+          </div>
+        </div>
+    </div>
+
+
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="../webcam.js"></script>
+
+    <script language="JavaScript">
+		Webcam.set({
+			width: 480,
+			height: 360,
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+	</script>
+	<!-- Configure a few settings and attach camera -->
+
+    <script src="js/require.js"></script>
+    <!-- Load srlib following RequireJS -->
+    <script src="js/srlib.js"></script>
+
+    <script src="js/paper-full.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <link href="css/spectrum.css" rel="stylesheet">
+    <link href="css/svgavatars.css" rel="stylesheet">
+
+	<script src="js/svg.min.js"></script>
+
+	<script src='js/spectrum.min.js'></script>
+    <script src="js/jquery.scrollbar.min.js"></script>
+
+
+    <script src="clustering.js"></script>
+    <script src="hull.js"></script>
+    <script type="text/javascript" src="hausdorff.js"></script>
+
+    <script src="js/canvg/rgbcolor.js"></script>
+	<script src="js/canvg/StackBlur.js"></script>
+	<script src="js/canvg/canvg.js"></script>
+
+    <script type="text/javascript" src="js/svgavatars.en.js"></script>
+    <script type="text/javascript" src="js/svg_avatar.js"></script>
+    <script type="text/javascript" src="js/avatar_draw.js"></script>
+
+    <script type="text/javascript" src="js/avatar_recognition.js"></script>
+	<!-- Code to handle taking the snapshot and displaying it locally -->
+	<script language="JavaScript">
+        //depends on code from avatar_recognition.js
+
+        sketch_paths = [];
+        for(d in drawing_order){
+            sketch_paths.push([]);
+        }
+        present_sketch = 0;
+
+		function preview_snapshot() {
+			// freeze camera so user can preview pic
+			Webcam.freeze();
+
+			// swap button sets
+            document.getElementById('camera_img').style.display = 'none';
+            document.getElementById('prev').innerHTML = "Retake";
+            document.getElementById('prev').onclick = cancel_preview;
+            document.getElementById('next').innerHTML = "Sketch";
+            document.getElementById('next').onclick = save_photo;
+            document.getElementById('navigation_buttons').style.display = 'inline-block';
+
+            var sketch = [];
+		}
+
+		function cancel_preview() {
+			// cancel preview freeze and return to live camera feed
+			Webcam.unfreeze();
+
+			// swap buttons back
+            document.getElementById('camera_img').style.display = 'inline-block';
+            document.getElementById('navigation_buttons').style.display = 'none';
+		}
+
+		function save_photo() {
+            if(!hasStarted()){
+                document.getElementById("modal-text").innerHTML = "Select Before Continuing";
+                modal.style.display = "block";
+                return;
+            }
+            if(getGender()=="girls"){
+                setDrawingOrderGirls();
+            }
+			// actually snap photo (from preview freeze) and display it
+			Webcam.snap( function(data_uri) {
+				// display results in page
+                user_img = data_uri;
+                var element = document.getElementById("my_camera");
+                element.parentNode.removeChild(element);
+                //element.outerHTML = "";
+                //delete element;
+
+				var canvas = document.getElementById('canvas');
+                context = canvas.getContext('2d');
+
+                document.getElementById("navigation_buttons").style.top="280px";
+
+                document.getElementById('selfie_img').setAttribute('src',data_uri);
+
+                // swap buttons
+                document.getElementById('prev').innerHTML = "Restart"
+                document.getElementById('prev').onclick = function(){
+                    window.location.reload();
+                };
+                document.getElementById('next').innerHTML = drawing_order[1];
+                document.getElementById('next').onclick = function(){
+                    save_and_goto_next();
+                };
+
+                drawTemporaryText("Trace Around Your "+drawing_order[0]);
+                document.getElementById('trash_img').style.display = 'inline-block';
+                document.getElementById('undo_img').style.display = 'inline-block';
+
+                changeActivePart(getSketchPart(drawing_order[0]));
+			} );
+		}
+
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("myBtn");
+        var span = document.getElementsByClassName("close")[0];
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function save_and_goto_next(){
+            if(paths.length == 0 && drawing_order[present_sketch]!="Beard" && drawing_order[present_sketch]!="Mustache" && drawing_order[present_sketch]!="Other Lines" && drawing_order[present_sketch]!="Glasses" && drawing_order[present_sketch]!="Clothes" && drawing_order[present_sketch]!="Background" && drawing_order[present_sketch]!="Hair"){
+                document.getElementById("modal-text").innerHTML = "Must Sketch Before Continuing";
+                modal.style.display = "block";
+                return;
+            }
+            submitElement();
+            sketch = new srlib.core.data.container.Sketch();
+            sketch_paths[present_sketch] = paths;
+            for(s in paths){
+                paths[s].strokeColor = '#565656';
+            }
+            paths = [];
+
+
+            present_sketch++;
+            drawTemporaryText("Sketch Your "+drawing_order[present_sketch]);
+            document.getElementById('prev').innerHTML = drawing_order[present_sketch-1];
+            document.getElementById('prev').onclick = function(){
+                    save_and_goto_prev();
+            };
+            if(present_sketch == drawing_order.length-1){
+                document.getElementById('next').innerHTML = "Finish";
+                document.getElementById('next').onclick = function(){
+                    console.log("Finished!");
+                    createFinalView();
+                };
+            }else{
+                document.getElementById('next').innerHTML = drawing_order[present_sketch+1];
+                if(paths.length == 0 && (drawing_order[present_sketch]=="Hair" || drawing_order[present_sketch]=="Beard" || drawing_order[present_sketch]=="Mustache" || drawing_order[present_sketch]=="Other Lines")){
+                    document.getElementById('next').innerHTML = "Skip";
+                }
+                document.getElementById('next').onclick = function(){
+                    save_and_goto_next();
+                };
+            }
+            if(drawing_order[present_sketch]!="Other Lines")
+                    changeActivePart(getSketchPart(drawing_order[present_sketch]));
+            if(drawing_order[present_sketch]=="Background" || drawing_order[present_sketch]=="Glasses" || drawing_order[present_sketch]=="Clothes"){
+                drawTemporaryText("Select Your "+drawing_order[present_sketch]);
+                document.getElementById('selector_view').style.display = 'inline-block';
+            }else{
+                document.getElementById('selector_view').style.display = 'none';
+            }
+        }
+
+        function clearPaths(){
+            for(s in paths){
+                paths[s].remove();
+            }
+            paths = [];
+            sketch = new srlib.core.data.container.Sketch();
+
+            //reset to bald if hair parts
+            var face_part = drawing_order[present_sketch];
+            if(face_part=="Hair" || face_part=="Mustache" || face_part=="Beard"){
+                drawFeature(template_keys[face_part],0);
+            }
+        }
+
+        function undo(){
+            if(paths.length>0){
+                var p = paths.pop();
+                p.remove();
+
+                //remove from sketch
+                max_time = -1;
+                max_key = "";
+                for (var key in sketch.strokes) {
+                  if (sketch.strokes.hasOwnProperty(key) && max_time < sketch.strokes[key].time) {
+                    max_time = sketch.strokes[key].time;
+                    max_key = key;
+                  }
+                }
+                /*for(pt in sketch.strokes[max_key].points){
+                    delete sketch.strokes[max_key].points[pt];
+                }*/
+                var pts_array = [];
+                for (var key in sketch.strokes) {
+                    if(sketch.strokes.hasOwnProperty(key) && key!=max_key){
+                        for(pts in sketch.strokes[key].points){
+                            pts_array.push(sketch.strokes[key].points[pts])
+                        }
+                    }
+                }
+                sketch.setPoints(pts_array);
+
+                delete sketch.strokes[max_key];
+            }
+            penMouseUp();
+        }
+
+        function save_and_goto_prev(){
+            sketches[present_sketch] = sketch;
+            sketch = new srlib.core.data.container.Sketch();
+            for(s in sketch_paths[present_sketch]){
+                sketch_paths[present_sketch][s].remove();
+            }
+            sketch_paths[present_sketch] = [];
+            clearPaths();
+            present_sketch--;
+            paths = sketch_paths[present_sketch];
+            for(s in paths){
+                paths[s].strokeColor = 'black';
+            }
+
+            drawTemporaryText("Sketch Your "+drawing_order[present_sketch]);
+
+            if(present_sketch==0){
+                document.getElementById('prev').innerHTML = "Restart"
+                document.getElementById('prev').onclick = function(){
+                    window.location.reload();
+                };
+            }else{
+                document.getElementById('prev').innerHTML = drawing_order[present_sketch-1];
+                document.getElementById('prev').onclick = function(){
+                    save_and_goto_prev();
+                };
+            }
+            if(drawing_order[present_sketch]!="Other Lines")
+                changeActivePart(getSketchPart(drawing_order[present_sketch]));
+            document.getElementById('next').innerHTML = drawing_order[present_sketch+1];
+            document.getElementById('next').onclick = function(){
+                    save_and_goto_next();
+            };
+            if(drawing_order[present_sketch]=="Background" || drawing_order[present_sketch]=="Glasses" || drawing_order[present_sketch]=="Clothes"){
+                drawTemporaryText("Select Your "+drawing_order[present_sketch]);
+                document.getElementById('selector_view').style.display = 'inline-block';
+            }else{
+                document.getElementById('selector_view').style.display = 'none';
+            }
+        }
+
+        instructions_text = 0;
+        function drawTemporaryText(str){
+            document.getElementById("instructions_text").innerHTML=str;
+            document.getElementById("instructions_text").style.display = 'inline-block';
+        }
+
+        var selected_elements = {};
+        selected_elements[getSketchPart("Glasses")] = 0;
+        selected_elements[getSketchPart("Background")] = 0;
+        selected_elements[getSketchPart("Clothes")] = 0;
+        function select_next(){
+            var part = getSketchPart(drawing_order[present_sketch])
+            var options_len = getPartOptions(part).length;
+
+            selected_elements[part] += 1;
+            if(selected_elements[part]>=options_len){
+                selected_elements[part] = 0;
+            }
+            drawFeature(part,selected_elements[part]);
+            console.log("Selected "+part+": "+selected_elements[part]);
+        }
+        function select_prev(){
+            var part = getSketchPart(drawing_order[present_sketch])
+            var options_len = getPartOptions(part).length;
+
+            selected_elements[part] -= 1;
+            if(selected_elements[part] < 0){
+                selected_elements[part] = options_len-1;
+            }
+            drawFeature(part,selected_elements[part]);
+            console.log("Selected "+part+": "+selected_elements[part]);
+        }
+
+        function printSketch(){
+            //print to console
+            serializer = new srlib.core.data.io.Serializer();
+            var json = JSON.stringify("");
+            for (var key in sketches) {
+              if (sketches.hasOwnProperty(key) && 'time' in sketches[key]) {
+                var json_s = serializer.toSketchMLJSONbasic(sketches[key]);
+                json.concat(json_s);
+              }
+            }
+
+            var png = getPNG();
+            avatar_json = JSON.stringify(png);
+
+            aimg_json = JSON.stringify(user_img);
+
+            var canvas = document.getElementById("canvas");
+            var cpng = canvas.toDataURL("image/png");
+            img_json = JSON.stringify(cpng);
+
+            json = json.concat(aimg_json);
+            json = json.concat(avatar_json);
+            json = json.concat(img_json);
+
+            $.ajax({
+               url: "json_upload.php",
+               type: 'POST',
+               contentType:'application/json',
+               data: json,
+               dataType:'json'
+             });
+        }
+
+        function clearSketch_wrapper(){
+            clearSketch();
+            var raster = new paper.Raster({source: user_img, position: paper.view.center});
+        }
+
+        //clears all HTML in Body (used at end)
+        function createFinalView(){
+            printSketch();
+            //avatar img
+            var png = getPNG();
+            //canvas img
+            var canvas = document.getElementById("canvas");
+            var cpng = canvas.toDataURL("image/png");
+
+            var myNode = document.body;
+            while (myNode.firstChild) {
+                myNode.removeChild(myNode.firstChild);
+            }
+
+            /*var a = document.createElement('a');
+            var linkText = document.createTextNode("Please Fill Out this Survey");
+            a.appendChild(linkText);
+            a.title = "Please Fill Out this Survey";
+            a.href = "https://goo.gl/forms/k1acCBbLLTSdQ6bt2";
+            document.body.appendChild(a);*/
+
+
+            var img = document.createElement("img");
+            console.log(img);
+            img.src=png;
+            img.style="position: relative; display: block; float:right; z-index:9999999;";
+            document.body.appendChild(img);
+
+            var cimg = document.createElement("img");
+            console.log(cimg);
+            cimg.src=cpng;
+            cimg.style="position: relative; display: block; float:left; z-index:9999999;";
+            document.body.appendChild(cimg);
+
+            var aimg = document.createElement("img");
+            console.log(aimg);
+            aimg.src=user_img;
+            aimg.style="position: relative; display: block; float:left; z-index:9999999;";
+            document.body.appendChild(aimg);
+        }
+
+	</script>
+	<script type="text/paperscript" canvas="canvas">
+        window.paths = [];
+        function onMouseDown(event) {
+            // PaperJS add a new Path object and initial starting point
+            path = new Path();
+            path.strokeColor = 'black';
+            path.strokeWidth = 2;
+            path.add(event.point);
+
+            // SRLlib add a new Stroke object and initial starting point
+            stroke = new srlib.core.data.container.Stroke();
+            point = new srlib.core.data.container.Point(event.point.x,event.point.y)
+            if (typeof sketch == "undefined") {
+                sketch = new srlib.core.data.container.Sketch();
+            }
+            sketch.addStroke(stroke);
+            sketch.addPoint(point);
+            stroke.addPoint(point);
+
+
+        }
+
+        function onMouseDrag(event) {
+           // PaperJS add points to Path object on mouse drag
+           path.add(event.point);
+
+           // SRLlib add points to Stroke on mouse drag
+           point = new srlib.core.data.container.Point(event.point.x,event.point.y)
+           sketch.addPoint(point);
+           stroke.addPoint(point);
+        }
+
+        function onMouseUp(event) {
+            window.sketch = sketch;
+            window.paths.push(path);
+            window.penMouseUp();
+
+            document.getElementById('next').innerHTML = drawing_order[present_sketch+1];
+        }
+
+        function clearSketch(){
+            project.clear();
+            sketch = new srlib.core.data.container.Sketch();
+        }
+        window.clearSketch=clearSketch;
+
+	</script>
+</body>
+</html>

@@ -10,7 +10,9 @@
     <div id="header" style="top"></div>
     <div id="outer">
         <div id="left_div">
-           <img id="selfie_img" src="" />
+           <div id="crop">
+            <img id="selfie_img" src="" />
+           </div>
            <canvas id="canvas"></canvas>
            <img id="trash_img" src="images/trash.png" onclick="clearPaths();" />
            <img id="undo_img" src="images/undo.png" onclick="undo();" />
@@ -35,8 +37,9 @@
     <!--Paper JS-->
     <script src="js/paper-full.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="js/jquery.facedetection.min.js"></script> 
 	
-    <script src="js/js/avatar_recognition.js"></script>
+    <script src="js/avatar_recognition.js"></script>
 	<!-- Code to handle taking the snapshot and displaying it locally -->
 	<script language="JavaScript">
         //depends on code from avatar_recognition.js
@@ -82,6 +85,32 @@
             context = canvas.getContext('2d');
 
             document.getElementById('selfie_img').setAttribute('src',"images/test_face.jpg");
+            
+            $('#selfie_img').faceDetection({
+                complete: function (faces) {
+                    var face = faces[0];
+                    console.log(face);
+                    //var rect = new paper.Rectangle(face.x, face.y, face.width, face.height);
+                    //var rect2 = new paper.Rectangle(10, 10, 10, 10);
+                    //console.log(rect);
+                    
+                    //var clip_str = "rect("+face.offsetY+"px "+face.offsetX+"px auto auto)";
+                    //console.log(clip_str);
+                    //var clip_str = "rect(0px 200px 200px 0px)";
+                    //document.getElementById("selfie_img").style.clip = clip_str;
+                    
+                    //document.getElementById('crop').width = face.width+"px";
+                    //document.getElementById('crop').height = face.height+"px";
+                    
+                    console.log(document.getElementById('selfie_img').clientWidth,face.width);
+                    console.log(document.getElementById('selfie_img').clientHeight,face.height);
+                    document.getElementById('selfie_img').style.marginLeft = -1*face.offsetX*.75 +"px";
+                    document.getElementById('selfie_img').style.marginTop = -1*face.offsetY*.1 +"px";
+                    document.getElementById('selfie_img').style.width = document.getElementById('selfie_img').clientWidth * (document.getElementById('selfie_img').clientWidth/face.width)/2+"px";
+                    document.getElementById('selfie_img').style.height = document.getElementById('selfie_img').clientHeight * (document.getElementById('selfie_img').clientHeight/face.height)/3+"px";
+                    
+                }
+            });
 
             document.getElementById('prev').innerHTML = "Restart"
             document.getElementById('prev').onclick = function(){

@@ -1,0 +1,37 @@
+<head>
+    <link href="css/spectrum.css" rel="stylesheet">
+    <link href="css/svgavatars.css" rel="stylesheet">
+    
+    <script src="js/jquery-1.10.2.min.js"></script>
+	<script src="js/svg.min.js"></script>
+
+	<script src='js/spectrum.min.js'></script>
+    <script src="js/jquery.scrollbar.min.js"></script>
+
+	<script src="js/canvg/rgbcolor.js"></script> 
+	<script src="js/canvg/StackBlur.js"></script>
+	<script src="js/canvg/canvg.js"></script>
+    
+    <script type="text/javascript" src="js/svgavatars.en.js"></script>
+    <script type="text/javascript" src="js/svg_avatar.js"></script>
+    <script type="text/javascript" src="js/avatar_draw.js"></script>
+</head>
+
+<body>
+    <input id="color_field" type="text" value="faceshape">
+    <button id="feature_button">Change Faceshape</button>
+    <div id="svgAvatars">
+    </div>
+    <script>
+        $('#feature_button').click(function(){
+            var zone = $('#color_field').val();
+            var shapes = getPartOptions(zone);
+            var shape = Math.floor((Math.random() * shapes.length));
+            drawFeature(zone,shape);
+        });
+        $('#color_field').change(function(){
+            avatar_part = $('#color_field').val();
+            changeActivePart(avatar_part);
+        });    
+    </script>
+</body>

@@ -1,0 +1,264 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Portrait Sketch</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <div id="header" style="top"></div>
+    <div id="outer">
+           <div id="svgAvatars" style="z-index:0; position: absolute; height:360px; width:480px; overflow:hidden; "></div>
+           <canvas id="canvas" style="width:400px;height:400px;"></canvas>
+           <img id="trash_img" src="images/trash.png" onclick="clearPaths();" />
+           <img id="undo_img" src="images/undo.png" onclick="undo();" />
+           <div id="instructions_text" align="center">Test Text</div>
+           <div id="navigation_buttons">
+               <a href="#prev" id="prev" class="button prev" stlye="display:none;">Previous</a>
+               <a href="#next" id="next" class="button next">Next</a>
+           </div>
+    </div>
+    
+	
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="../webcam.js"></script>
+    
+	<!-- Configure a few settings and attach camera -->
+    
+    <script src="js/require.js"></script>
+    <!-- Load srlib following RequireJS -->
+    <script src="js/srlib.js"></script>	
+
+    <script src="js/paper-full.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    
+    <link href="css/spectrum.css" rel="stylesheet">
+    <link href="css/svgavatars.css" rel="stylesheet">
+    
+	<script src="js/svg.min.js"></script>
+
+	<script src='js/spectrum.min.js'></script>
+    <script src="js/jquery.scrollbar.min.js"></script>
+
+	<script src="js/canvg/rgbcolor.js"></script> 
+	<script src="js/canvg/StackBlur.js"></script>
+	<script src="js/canvg/canvg.js"></script>
+    
+    <script type="text/javascript" src="js/svgavatars.en.js"></script>
+    <script type="text/javascript" src="js/svg_avatar.js"></script>
+    <script type="text/javascript" src="js/avatar_draw.js"></script>
+	
+    <script src="js/avatar_recognition.js"></script>
+	<!-- Code to handle taking the snapshot and displaying it locally -->
+	<script language="JavaScript">
+        //depends on code from avatar_recognition.js
+        
+        sketch_paths = [];
+        var drawing_order = []; 
+        var option_sketches = {};//stores each sketch for each option for each feature in order
+        
+        $("#canvas").css("z-index", "1");
+        $("#svgAvatars").css("z-index", "1000");
+        
+        function canStart() {
+            if(!hasStarted()) {
+                setTimeout(canStart, 50);
+                return;
+            }
+            start();
+        }
+        canStart();
+        
+        var choice_counter = 0;
+        
+        function start(){
+            $("#canvas").css("z-index", "1000");
+            $("#svgAvatars").css("z-index", "1");
+            if(getGender()==="boys"){
+                drawing_order = ['faceshape','hair','ears','eyebrows','eyesfront','glasses','mouth','mustache','beard','nose']
+            }else{
+                drawing_order = ['faceshape','hair','ears','eyebrows','eyesfront','glasses','mouth','nose'];
+            }
+            for(d in drawing_order){
+                sketch_paths.push([]);
+            }
+            present_sketch = 0;
+            drawFeature(drawing_order[0],choice_counter);
+            option_sketches[drawing_order[0]] = {};
+            option_sketches[drawing_order[0]].feature = drawing_order[0];
+            option_sketches[drawing_order[0]].sketches = [];
+
+            var sketch = [];
+
+            document.getElementById('canvas').style.display = "inline-block";
+
+            document.getElementById("navigation_buttons").style.top="280px";
+
+            // swap buttons
+            document.getElementById('prev').style.display = "none";
+            document.getElementById('next').innerHTML = "Next";
+            document.getElementById('next').onclick = function(){
+                save_and_goto_next();
+            };
+
+            drawTemporaryText("Trace Around "+drawing_order[0]);
+            document.getElementById('trash_img').style.display = 'inline-block';
+            document.getElementById('undo_img').style.display = 'inline-block';
+        }
+            
+        function save_and_goto_next(){
+            if(paths.length == 0)
+                return;
+            option_sketches[drawing_order[present_sketch]].sketches.push(sketch);
+            submitElement();
+            sketch = new srlib.core.data.container.Sketch();
+            sketch_paths[present_sketch] = paths;
+            for(s in paths){
+                paths[s].remove();
+            }
+            paths = [];
+            
+            choice_counter++;
+            
+            if(choice_counter==getPartOptions(drawing_order[present_sketch]).length && present_sketch != drawing_order.length-1){
+                choice_counter = 0;
+                present_sketch++;
+                if(present_sketch < drawing_order.length){
+                    option_sketches[drawing_order[present_sketch]] = {};
+                    option_sketches[drawing_order[present_sketch]].feature = drawing_order[present_sketch];
+                    option_sketches[drawing_order[present_sketch]].sketches = [];
+                }
+            }else{
+                document.getElementById('next').innerHTML = "Next";
+                document.getElementById('next').onclick = function(){
+                    save_and_goto_next();
+                };
+            }
+            if(present_sketch == drawing_order.length-1 && choice_counter==getPartOptions(drawing_order[present_sketch]).length){
+                document.getElementById('next').innerHTML = "Finish";
+                document.getElementById('next').onclick = function(){
+                    console.log("Finished!");
+                    console.log("results: ");
+                    console.log(JSON.stringify(option_sketches));
+                };
+            }else{
+                drawFeature(drawing_order[present_sketch],choice_counter);
+                if(drawing_order[present_sketch]!="hair"){
+                    drawFeature("hair",0);
+                }
+                drawTemporaryText("Trace "+drawing_order[present_sketch]);
+            }
+        }
+        
+        function clearPaths(){
+            for(s in paths){
+                paths[s].remove();
+            }
+            paths = [];
+            sketch = new srlib.core.data.container.Sketch();
+        }
+        
+        function undo(){
+            if(paths.length>0){
+                var p = paths.pop();
+                p.remove();
+            }
+        }
+        
+        instructions_text = 0;
+        function drawTemporaryText(str){
+            /*var canvas = document.getElementById('canvas');
+            var x = canvas.width / 2;
+            var y = canvas.height - canvas.height / 10;
+                
+            if(instructions_text != 0){
+                instructions_text.remove();
+            }
+            instructions_text = new paper.PointText(new paper.Point(x, y));
+            instructions_text.style = {
+                fontFamily: 'Courier New',
+                fontWeight: 'bold',
+                fontSize: 20,
+                fillColor: 'black',
+                justification: 'center'
+            };
+            instructions_text.content = str;*/
+            
+            document.getElementById("instructions_text").innerHTML=str;
+            document.getElementById("instructions_text").style.display = 'inline-block';
+        }
+        
+        function printSketch(){
+            //print to console
+            serializer = new srlib.core.data.io.Serializer();
+            json = serializer.toSketchMLJSONbasic(sketch);
+            console.log(json);
+            
+            //send to server
+            var canvas = document.getElementById('canvas');
+            var dataURL = canvas.toDataURL('image/png');
+            img_json = JSON.stringify(dataURL);
+            json = json.concat(img_json);
+            $.ajax({
+               url: "json_upload.php",
+               type: 'POST',
+               contentType:'application/json',
+               data: json,
+               dataType:'json'
+             });
+        }
+        
+        function clearSketch_wrapper(){
+            clearSketch();
+            var raster = new paper.Raster({source: user_img, position: paper.view.center});
+        }
+        
+	</script>
+	<script type="text/paperscript" canvas="canvas">
+        window.paths = [];
+        function onMouseDown(event) {
+            // PaperJS add a new Path object and initial starting point
+            path = new Path();
+            path.strokeColor = 'black';
+            path.strokeWidth = 2;
+            path.add(event.point);
+
+            // SRLlib add a new Stroke object and initial starting point
+            stroke = new srlib.core.data.container.Stroke();
+            point = new srlib.core.data.container.Point(event.point.x,event.point.y)
+            if (typeof sketch == "undefined") {
+                sketch = new srlib.core.data.container.Sketch();
+            }
+            sketch.addStroke(stroke);
+            sketch.addPoint(point);
+            stroke.addPoint(point);
+                    
+            
+        }
+
+        function onMouseDrag(event) {
+           // PaperJS add points to Path object on mouse drag
+           path.add(event.point);
+
+           // SRLlib add points to Stroke on mouse drag
+           point = new srlib.core.data.container.Point(event.point.x,event.point.y)
+           sketch.addPoint(point);
+           stroke.addPoint(point);
+        }
+
+        function onMouseUp(event) {	
+            window.sketch = sketch;
+            window.paths.push(path);
+            window.penMouseUp();
+        }
+        
+        function clearSketch(){
+            project.clear();
+            sketch = new srlib.core.data.container.Sketch();
+        }
+        window.clearSketch=clearSketch;
+
+	</script>
+</body>
+</html>
