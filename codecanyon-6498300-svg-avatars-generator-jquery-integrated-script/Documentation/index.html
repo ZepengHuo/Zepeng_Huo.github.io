@@ -1,0 +1,319 @@
+<DOCTYPE html>
+<html lang="en">
+<head>
+  <title>SVG Avatars - Documentation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta charset="utf-8">
+  
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/svgavatars-help.css" rel="stylesheet">
+  <link href="css/prettify.css" rel="stylesheet">
+
+  <script src="js/jquery-1.9.1.min.js"></script>
+  <script src="js/prettify.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/raphael-min.js"></script>
+  <script src="js/livicons-for-svgavatars.min.js"></script>
+  
+  <script>
+    var shiftWindow = function() { scrollBy(0, -50) };
+    window.addEventListener("hashchange", shiftWindow);
+    function load() { if (window.location.hash) shiftWindow(); }
+  </script>
+</head>
+
+<body>
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="#main">SVG Avatars</a>
+        <div class="nav-collapse collapse">
+          <ul class="nav">
+            <li><a href="#update">Update</a></li>
+            <li><a href="#settings">Settings</a></li>
+            <li><a href="#setup">Setup</a></li>
+            <li><a href="#html">HTML Structure</a></li>
+            <li><a href="#css">CSS Structure</a></li>
+            <li><a href="#integration">Integration</a></li>
+            <li><a href="#credits">Credits</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="section" id="main">
+    <div class="row">
+      <div class="span12"><h2 class="page-header">&ldquo;SVG Avatars&rdquo; Documentation by &ldquo;DeeThemes&rdquo; v1.3.2</h2></div>
+    </div>
+    <div class="row">
+      <div class="span4">
+        <div class="well">
+          <p>
+            <strong>Created: January, 3, 2014<br>
+            Last updated: January, 6, 2015<br>
+            By: DeeThemes<br>
+            Contact: <a href="http://codecanyon.net/item/svg-avatars-generator-jquery-integrated-script/6498300/support">Support tab</a></strong>
+          </p>
+        </div>
+      </div>
+      <div class="span8">
+        <div class="well">
+          <p>Thank you <i class="livicon" data-n="heart" data-s="16" data-c="darkred" data-hc="red" data-op="1"></i> for purchasing SVG Avatars Generator! If you have any questions that are beyond the scope of this help file, please feel free to email via my user page contact form <a href="http://codecanyon.net/user/DeeThemes#contact">here</a>. If you like these script please rate it with <i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i>. Thanks so much!</p><br>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="overview">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">Overview</h3></div>
+    </div>
+    <div class="row">
+      <div class="span12">
+        <p>This jQuery integrated script lets your visitors to create custom avatars. The generator based on SVG (Scalable Vector Graphic), which is supported by all modern browsers and does not depend on screen resolutions (means Retina ready). As a result your visitors can download their avatars as SVG file or as PNG one which is converted from vectors. The integration of the generator is quite simple.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="update">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">Update (v1.3.2)</h3></div>
+    </div>
+    <div class="row">
+      <div class="span12">
+        <p><b>IMPORTANT: </b>This update is just a fix of general layout for correct view in new versions of Google Chrome.</p>
+        <p>If you made any customization in CSS file <b>svgavatars/css/svgavatars.css</b> please backup it and edit the new one from <b>\upload\svgavatars\css</b> folder.</p>
+        <p>After that simply replace 2 existing files: <b>jquery.scrollbar.min.js</b> with the new one from <b>\upload\svgavatars\js</b> folder and <b>svgavatars.css</b> file with the new one from <b>\upload\svgavatars\css</b> folder.</p>
+        <p>Any other files were NOT changed in this update.</p>
+
+
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="settings">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">1. Settings</h3></div>
+    </div>
+    <div class="row">
+      <div class="span12">
+        <p>First of all you can change default settins of the script by correcting variables values at the top of it. Please open for ex. <strong>svgavatars.core.min.js</strong> file from <strong>upload/svgavatars/js/</strong> folder in your editor.</p>
+        <p>From v1.3 "Save" button and "SVG" download option are disabled by default. If you need them please simply change corresponding variables values to "false". Also there are some new variables.</p>
+        <p>There you will see the following code:</p>
+<pre class="prettyprint linenums">//Global options
+var path_to_folder = '/svgavatars/',//the path to main SVG Avatars folder from root dir of your site. The slashes "/" are important!
+  delta_sat = 0.1, //the step of saturation color change in HSV (HSB) mode (10% by default)
+  delta_val = 0.06, //the step of value (brightness) color change in HSV (HSB) mode (6% by default)
+  save_format = 'png', //must be exactly 'png' or 'svg' for storing on a server
+  save_size = 200, //the dimentions for avatar stored on a server (pixels)
+  svg_download_size = 600, //the conditional dimentions of SVG file when download by user (pixels)
+  png_one_download_size = 200, //the dimentions of first option PNG file when download by user (pixels)
+  png_two_download_size = 400, //the dimentions of second option PNG file when download by user (pixels)
+  png_ios_download_size = 500, //the dimentions of PNG file when download by user on iOS devices (pixels)
+  png_win8tablet_download_size = 400, //the dimentions of PNG file when download by user on Win8 phones and tablets (pixels)
+  gravatar_size = 200,//the dimentions of PNG file for Gravatar service (pixels)
+  hide_save = true, //true will disable save on your server option
+  hide_svg_download_on_Android = true, //true will disable download SVG option on Android devices (not useful)
+  hide_svg_download = true, //true will disable download SVG option
+  hide_png_one_download = false, //true will disable download PNG with first dimensions
+  hide_png_two_download = false, //true will disable download PNG with second dimensions
+  hide_gravatar = false, //true will disable the possibility to install created avatar as gravatar
+  color_theme = 'dark'; //must be exactly 'light' or 'dark'
+
+//Share options
+var hide_share = false, //true will disable share option
+  share_image_size = 500, //the dimentions of PNG file for share with Social networks (pixels)
+  facebook_app_id = 'replace me!', //you must have an Facebook's App ID for correct work of share function (https://developers.facebook.com/apps)
+  facebook = true, //false will disable Facebook share option
+  twitter = true, //false will disable Twitter share option
+  pinterest = true, //false will disable Pinterest share option
+  googleplus = true, //false will disable Google Plus share option
+  share_link = document.URL, //will be an URL of a HTML page where the generator is placed
+  share_title = document.title, //will be the title tag of a HTML page where the generator is placed
+  share_description = '', //if you leave it blank, it might be taken from your meta description tag
+  share_credit = 'Created on YourSite.com';//replase YourSite.com with yours or leave it blank (do NOT delete variable itself!), if you don't want a watermark on avatar for Social share</pre>
+        <p>First please look on the comments above and here is some more explanations:</p>
+        <ol>
+          
+          <li><strong>path_to_folder</strong> - the path to svgAvatars from root dir of your site. For example, you upload the script to this folder - www.yoursite.com/upload/svgavatars/. In that case this value must be <strong>/upload/svgavatars/</strong>. The slashes "/" are IMPORTANT!</li>
+          
+          <li><strong>delta_sat</strong> and <strong>delta_val</strong> are used for calculating shadows and hightlights of choosen colors in the script itself. The HSV (hue, saturation, value) model is used for this process. Please look at this picture:<br><br>
+            <img src="img/delta_sat_val.png"><br><br>
+            The higher value of <strong>delta_sat</strong> and <strong>delta_val</strong> - the more contrast will be implemented. You can play with this settings, but please don't set very high values.
+          </li>
+          
+          <li><strong>save_format</strong>. If you wish, the script can save users' created avatars on your server in the <strong>ready-avatars</strong> folder. You can organize a store of the links of these files in your database with corresponding to your registered user names. <strong>Note:</strong> This functional needs additional PHP code, which is NOT included in this pack. You need to write and add it by yourself in <strong>upload/svgavatars/php/save-ready-avatar.php</strong> file.<br> The value of <strong>save_format</strong> specifies the format of a saved file (must be exactly 'png' or 'svg'). <strong>Note:</strong> SVG can be simply used in <code>img</code> HTML tag. For ex. <code>&lt;img src="ready-avatars/some-generated-name.svg" alt="Username here"&gt;</code>. All modern browsers work correctly with that.</li>
+          
+          <li><strong>save_size</strong>, <strong>svg_download_size</strong>, <strong>png_one_download_size</strong>, <strong>png_two_download_size</strong> and <b>gravatar_size</b> set the dimentions of files for saving on your server, downloading by your visitors and uploading to gravatar.com.</li>
+          
+          <li><strong>png_ios_download_size</strong> specifies PNG file dimentions for iOS (Retina). <strong>Note:</strong> iOS doesn't allow force download dynamically created avatars in Safari browser. So special functionality was prepared for such devices, when user gets a file converted from SVG to PNG in a modal box, after that he/she needs to tap and hold that image and choose <strong>Save</strong>.</li>
+          
+          <li><strong>png_win8tablet_download_size</strong> sets PNG file dimentions for mobile devices (not desktop) which working under Windows 8. Like for iOS your visitors gets a file converted from SVG to PNG in a modal box, after that he/she needs to tap and hold that image and choose <strong>Save</strong>.</li>
+          
+          <li><strong>hide...</strong> variables let you disable unnecessary options in your opinion. One note: if you set all <strong>hide_download_...</strong> to <strong>true</strong> the whole "download" menu item will be disabled</li>
+          
+          <li><strong>color_theme</strong> - must be "dark" or "light". You can easy change colors by modifing section at the end of <strong>upload/svgavatars/css/svgavatars.css</strong> file. Also in a source code file you can find one more value - <b>custom</b>. It's for WordPress plugin only and doesn't take affect in this pack.</li>
+          
+          <li>Special note about share functionality
+            <ul>
+              <li>Ready avatar may be shared as image on Facebook and Pinterest only. Twitter doesn't allow share images at all. Google Plus needs a static image which it can grab from HTML code on your page. Due to dynamic nature of generated avatars it's not possible.</li>
+              <li>You must have your unique <b>Facebook App ID</b> for share function works. You can register your site and get an App ID in Developers section <a href="https://developers.facebook.com/apps" target="_blank">here</a></li>
+              <li>After creating new App you will see App ID field, copy that value to <strong>facebook_app_id</strong> variable.</li>
+              <li>After that on Facebook App page click <strong>Settings</strong>, then <strong>+AddPlatform</strong>, choose <strong>Website</strong> in modal box and fill <strong>Site URL</strong> field. Then click <strong>Save Changes</strong>. If you will not specify your site URL an error might occur when your visitors will try to share an avatar.</li>
+            </ul>
+          </li>
+          <li>Special note about uploading to gravatar.com<br>
+            For correct work of uploading of created avatars to secure.gravatar.com you must have PHP cURL extension is enabled on your server (please check phpinfo() or contact your hosting provider). See <a href="http://php.net/manual/en/book.curl.php" target="_blank">PHP: cURL - Manual</a> for more information. 
+          </li>
+          <li>From v1.3 SVG Avatars Generator comes with seven localized files: English, German, Spanish, French, Italian, Portuguese and Russian. Please upload only the one you prefer. Also you can correct the translation or modify it to suit your needs before uploading.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="setup">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">2. Setup</h3></div>
+    </div>
+    <div class="row">
+      <div class="span12">
+        <p>After first step, upload to your server the all files and directories from <strong>upload</strong> folder. <strong>IMPORTANT: </strong>Change folders' permissions of <strong>ready-avatars</strong> and <strong>temp-avatars</strong> to <strong>755 (better choice)</strong> or <strong>777 (not recommended)</strong>.</p>
+        <p>All avatars saved by users on your server are stored in <strong>ready-avatars</strong> folder. As I said above, you can also store links to these files in your database if you wish, but you need additional PHP code, which you can place in <strong>save-ready-avatar.php</strong> file.</p>
+        <p>All temporary created avatars, which users download and share (after successful sharing we don't need them anymore), stored in <strong>temp-avatars</strong> folder. I recommend to periodically clean this folder, for example, by cron job (Please ask your hosting provider about).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="html">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">3. HTML Structure</h3></div>
+    </div>
+    
+    <div class="row">
+      <div class="span4">
+        <p>After uploading you need to declare CSS files in the <code>&lt;head></code> section and JS files in <code>&lt;head></code> <strong>or</strong> before closing <code>&lt;/body></code> tag in your HTML page.</p>
+        <p><strong>Note:</strong> Min. needed version of jQuery is 1.8.2</p>
+      </div>
+      <div class="span8">
+        <p>For example:</p>
+          <pre class="prettyprint linenums">&lt;!-- CSS --&gt;
+&lt;link href="svgavatars/css/spectrum.css" rel="stylesheet"&gt;
+&lt;link href="svgavatars/css/svgavatars.css" rel="stylesheet"&gt;
+&lt;link href="http://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,700|Roboto:400,300,500,700&subset=latin,cyrillic-ext,cyrillic,latin-ext" rel="stylesheet" type="text/css"&gt;
+
+&lt;!-- JavaScript --&gt;
+&lt;script src="path_to_your/jquery.js"&gt;&lt;/script&gt;
+&lt;script src="svgavatars/js/svg.min.js"&gt;&lt;/script&gt;
+&lt;script src='svgavatars/js/spectrum.min.js'&gt;&lt;/script&gt;
+&lt;script src="svgavatars/js/jquery.scrollbar.min.js"&gt;&lt;/script&gt;
+&lt;script src="svgavatars/js/canvg/rgbcolor.js"&gt;&lt;/script&gt; 
+&lt;script src="svgavatars/js/canvg/StackBlur.js"&gt;&lt;/script&gt;
+&lt;script src="svgavatars/js/canvg/canvg.js"&gt;&lt;/script&gt;
+
+&lt;!-- Place here 2 svgAvatars scripts --&gt;
+&lt;script src="svgavatars/js/svgavatars.en.js"&gt;&lt;/script&gt;
+&lt;script src="svgavatars/js/svgavatars.core.min.js"&gt;&lt;/script&gt;</pre> 
+        <div class="alert alert-info">
+          <i class="livicon" data-s="16" data-n="info" data-c="#3A87AD" data-hc="0" data-op="1"></i> The order of declarations is important.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="css">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">4. CSS Structure</h3></div>
+    </div>
+    <div class="row">
+      <div class="span4">
+        <p>The all neccessary styles are in the <strong>svgavatars/css/svgavatars.css</strong> file.</p>
+      </div>
+      <div class="span8">
+        <p>If your site design let you to expand the generator to full width you can delete "max-width" value at the top of the CSS file or set your own one:</p>
+        <pre class="prettyprint">#svgAvatars {
+  max-width: 960px;
+  margin: 0 auto;
+}</pre>
+      </div>
+      <div class="span4">
+        <p></p>
+      </div>
+      <div class="span8">
+        <p>If you will not use "Roboto" font, change line 36:</p>
+        <pre class="prettyprint">font-family: 'Roboto', "Helvetica Neue", Helvetica, Arial, sans-serif;</pre>
+      </div>
+      <div class="span4">
+        <p></p>
+      </div>
+      <div class="span8">
+        <p>If you want to change any color scheme please find this section near the end of the CSS file:</p>
+        <pre class="prettyprint">/******************* Color schemes *******************/
+
+/* LIGHT scheme */
+#svga-container.svga-light,
+...</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="integration">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">5. Intergration</h3></div>
+    </div>
+    <div class="row">
+      <div class="span4">
+        <p>And now all you need is to place the one line of code somewhere in your <code>&lt;body&gt;</code> section</p>
+      </div>
+      <div class="span8">
+          <pre class="prettyprint linenums">&lt;div id="svgAvatars"&gt;&lt;/div&gt;</pre> 
+          <div class="alert alert-info">
+          <i class="livicon" data-s="16" data-n="info" data-c="#3A87AD" data-hc="0" data-op="1"></i> The id name must be exactly <strong>svgAvatars</strong> (case sensitive).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="span12">
+      <p class="well">Also you can find some useful information in the FAQ section of my demo site - <a href="http://svgavatars.com">svgAvatars.com</a></p>
+    </div>
+  </div>
+
+  <div class="section" id="credits">
+    <div class="row">
+      <div class="span12"><h3 class="page-header">Special thanks to</h3></div>
+    </div>
+    <div class="row">
+      <div class="span12">
+        <ul>
+          <li>jQuery team for the outstanding <a href="http://jquery.com">work</a></li>
+          <li>Wout Fierens the author of <a href="http://svgjs.com">SVG JS</a> lib</li>
+          <li>Brian Grinstead the author of <a href="http://bgrins.github.io/spectrum/">Spectrum Colorpicker</a></li>
+          <li>Yuriy Khabarov the author of <a href="https://github.com/gromo/dslib/tree/master/jquery.scrollbar">jQuery Custom Scrollbar plugin</a></li>
+          <li>Gabe Lerner the author of <a href="https://code.google.com/p/canvg/">Canvg - SVG parser and renderer script</a></li>
+          <li>Without these talented people svgAvatars could never be created. Thank so much!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <hr>
+    <div class="span12">
+      <p class="well">Once again, thank you so much for purchasing this item. As I said at the beginning, I'd be glad to help you if you have any questions relating to this package. No guarantees, but I'll do my best to assist. If you have a more general question relating to SVA Avatars Generator, you might contact me via my user page contact form <a href="http://codecanyon.net/user/DeeThemes#contact">here</a>. And again if you like these app please rate it with <i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i><i class="livicon" data-n="star-full" data-s="16" data-c="#D7A400" data-op="0" data-hc="#FFC400"></i>. Thanks You!<br><br><strong>Best regards,<br>Dee</strong></p>
+    </div>
+  </div>
+
+</div><!--end .container-->
+<script>
+  !function ($) {
+    $(function(){
+      window.prettyPrint && prettyPrint()   
+    })
+  }(window.jQuery)
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+IMPORTANT: 
+1) Please note that svgAvatars script won't run locally. Please test it on a working web server.
+2) You must have an Facebook App ID for share function works. Please look at th Documentation.
+3) You must have PHP cURL extension is enabled for correct work of uploading avatars to secure.gravatar.com
+4) From v1.3.1 Gravatar functionality will work on a live web server only, not on any LAMP/XAMP 

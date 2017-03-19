@@ -1,0 +1,40 @@
+/**************************************************************************
+ * changelog.txt of SVG Avatars Generator - jQuery script for creating vector avatars
+ * @version: 1.3.2
+ * @requires jQuery v1.8.2 or later
+ * @URL http://svgavatars.com
+ * @author DeeThemes
+**************************************************************************/
+v1.3.2
+2015, January, 6
+- fix of general layout for correct view in new versions of Google Chrome.
+
+v1.3.1
+2014, November, 21
+- fix for Gravatar option
+  /*
+     At present time Gravatar XML-RPC api doesn't work with "grav.saveData" method.
+     The "grav.saveData" method is replaced with "grav.saveUrl" one
+  */
+
+v1.3
+2014, January, 23
+- added a possibility to upload a created avatar to gravatar.com via public Gravatar's XML-RPC API
+- added 4 languages
+- bug fix for Windows 8 tablets and phones
+- changed JS files structure
+- changed CSS file
+
+v1.2
+2014, January, 11
+-added share functionality
+
+v1.1
+2014, January, 7
+- added glasses
+- added facial hair for males
+- added ability to make bald head
+- slightly changes in CSS
+
+v1.0
+2014, January, 3 - initial release

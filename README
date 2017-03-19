@@ -1,0 +1,14 @@
+IMPORTANT:do not distribute without permission. SVG assets require license to use in application
+
+'demos' directory contains all html code used in the study
+
+avatar_creator.html is the final project for this class
+hull.js contains code for extracting hulls from sketch library objects
+hausdorff.js contains the different hausdorff implementations with sketch library object
+avatar_draw.js contains all functions used to draw avatar
+avatar_recognition.js contains logic to draw based on input from sketch interface
+svg_avatar.js has math and logic for dealing with SVG file color changes and transformation of shapes
+webcam.js allows for the webcam use with html5 and flash fallback
+
+templates_*.json contains the templates for male and female
+svgavatars-*.json contains svg assets
