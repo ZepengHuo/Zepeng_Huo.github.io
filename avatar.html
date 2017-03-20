@@ -1,0 +1,194 @@
+<!doctype html>
+
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Portrait Sketch</title>
+	<style type="text/css">
+		body { font-family: Helvetica, sans-serif; }
+		h2, h3 { margin-top:0; }
+		form { margin-top: 15px; }
+		form input { margin-right: 15px; }
+    </style>
+</head>
+<body>
+    <div style="position:relative;">
+	   <div id="my_camera" style="z-index:2; position: absolute;"></div>
+       <canvas id="canvas" style="z-index:1; position: absolute;height:360px;width:480px;"></canvas>
+    </div>
+	
+	<!-- First, include the Webcam.js JavaScript Library -->
+	<script type="text/javascript" src="../webcam.js"></script>
+	
+	<!-- Configure a few settings and attach camera -->
+	<script language="JavaScript">
+		Webcam.set({
+			width: 480,
+			height: 360,
+			image_format: 'jpeg',
+			jpeg_quality: 90
+		});
+		Webcam.attach( '#my_camera' );
+	</script>
+    
+    <script src="js/require.js"></script>
+    <!-- Load srlib following RequireJS -->
+    <script src="js/srlib.js"></script>	
+    <!--Paper JS-->
+    <script src="js/paper-full.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    
+	
+	<!-- A button for taking snaps -->
+	<form style="position:absolute;z-index:3;top:430px;">
+		<div id="pre_take_buttons">
+			<input type=button value="Take Snapshot" onClick="preview_snapshot()">
+		</div>
+		<div id="post_take_buttons" style="display:none">
+			<input type=button value="&lt; Take Another" onClick="cancel_preview()">
+            
+			<input type=button value="Sketch Photo &gt;" onClick="save_photo()" style="font-weight:bold;display:block;">
+		</div>
+        <div id="sketch_buttons" style="display:none">
+            <input type=button value="Clear Sketch" onClick="clearSketch_wrapper()">
+            <input type=button value="Upload Sketch" onClick="printSketch()">
+        </div>
+	</form>
+	
+	<!-- Code to handle taking the snapshot and displaying it locally -->
+	<script language="JavaScript">
+		function preview_snapshot() {
+			// freeze camera so user can preview pic
+			Webcam.freeze();
+			
+			// swap button sets
+			document.getElementById('pre_take_buttons').style.display = 'none';
+			document.getElementById('post_take_buttons').style.display = '';
+            
+            var sketch = [];
+		}
+		
+		function cancel_preview() {
+			// cancel preview freeze and return to live camera feed
+			Webcam.unfreeze();
+			
+			// swap buttons back
+			document.getElementById('pre_take_buttons').style.display = '';
+			document.getElementById('post_take_buttons').style.display = 'none';
+		}
+		
+		function save_photo() {
+			// actually snap photo (from preview freeze) and display it
+			Webcam.snap( function(data_uri) {
+				// display results in page
+				//document.getElementById('my_camera').innerHTML = 
+                //    '<canvas id="canvas"></canvas>';
+					//'<img src="'+data_uri+'"/>';
+                //document.getElementById('my_camera').innerHTML = "";
+                //document.getElementById('my_camera').display = "none";
+                user_img = data_uri;
+                var element = document.getElementById("my_camera");
+                element.outerHTML = "";
+                delete element;
+                
+				var canvas = document.getElementById('canvas');
+                context = canvas.getContext('2d');
+                portrait = new Image();
+                portrait.src = data_uri;
+                var raster = new paper.Raster({source: user_img, position: paper.view.center});
+
+                
+				// swap buttons
+				document.getElementById('pre_take_buttons').style.display = 'none';
+				document.getElementById('post_take_buttons').style.display = 'none';
+                document.getElementById('sketch_buttons').style.display = 'block';
+			} );
+		}
+        
+        function printSketch(){
+            //print to console
+            serializer = new srlib.core.data.io.Serializer();
+            json = serializer.toSketchMLJSONbasic(sketch);
+            console.log(json);
+            
+            //send to server
+            var canvas = document.getElementById('canvas');
+            var dataURL = canvas.toDataURL('image/png');
+            /*$.ajax({
+              type: "POST",
+              url: "image_upload.php",
+              data: { 
+                 imgBase64: dataURL
+              },
+              success: function(msg){
+                 console.log('response: '+msg); 
+              },
+              error: function(XMLHttpRequest, textStatus, errorThrown) {
+                 console.log("ERROR UPLOADING: "+textStatus+errorThrown);
+              }
+            }).done(function(o) {
+
+            });*/
+            img_json = JSON.stringify(dataURL);
+            json = json.concat(img_json);
+            $.ajax({
+               url: "json_upload.php",
+               type: 'POST',
+               contentType:'application/json',
+               data: json,
+               dataType:'json'
+             });
+        }
+        
+        function clearSketch_wrapper(){
+            clearSketch();
+            var raster = new paper.Raster({source: user_img, position: paper.view.center});
+        }
+        
+	</script>
+	<script type="text/paperscript" canvas="canvas">			
+        function onMouseDown(event) {
+            // PaperJS add a new Path object and initial starting point
+            path = new Path();
+            path.strokeColor = 'orange';
+            path.strokeWidth = 2;
+            path.add(event.point);
+
+            // SRLlib add a new Stroke object and initial starting point
+            stroke = new srlib.core.data.container.Stroke();
+            point = new srlib.core.data.container.Point(event.point.x,event.point.y)
+            if (typeof sketch == "undefined") {
+                sketch = new srlib.core.data.container.Sketch();
+            }
+            sketch.addStroke(stroke);
+            sketch.addPoint(point);
+            stroke.addPoint(point);
+                    
+            
+        }
+
+        function onMouseDrag(event) {
+           // PaperJS add points to Path object on mouse drag
+           path.add(event.point);
+
+           // SRLlib add points to Stroke on mouse drag
+           point = new srlib.core.data.container.Point(event.point.x,event.point.y)
+           sketch.addPoint(point);
+           stroke.addPoint(point);
+        }
+
+        function onMouseUp(event) {	
+            window.sketch = sketch;
+        
+        }
+        
+        function clearSketch(){
+            project.clear();
+            sketch = new srlib.core.data.container.Sketch();
+        }
+        window.clearSketch=clearSketch;
+
+	</script>
+</body>
+</html>
